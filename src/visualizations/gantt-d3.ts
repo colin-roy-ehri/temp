@@ -95,10 +95,6 @@ export const vis: GanttViz = {
     const nameDim = config.nameDim || dimensions[0].name;
     const startDim = config.startDim || dimensions[1].name;
     const endDim = config.endDim || dimensions[2].name;
-    const refBand1Start = config.ref1BandStart || dimensions[3].name;
-    const refBand1End = config.ref1BandEnd || dimensions[4].name;
-    const refBand2Start = config.ref2BandStart || dimensions[5].name;
-    const refBand2End = config.ref2BandEnd || dimensions[6].name;
     const titleColumn = config.titleColumn || dimensions[0].name;
     const title = data[0][titleColumn].value || config.chartTitle || "Gantt Chart";
     const legendFontSize = config.legendFontSize || 12;
@@ -136,14 +132,6 @@ export const vis: GanttViz = {
         item.y = index;
       });
     });
-
-    const firstRow = data[0];
-    const refBands = {
-      refBand1Start: new Date(firstRow[refBand1Start].value).getTime(),
-      refBand1End: new Date(firstRow[refBand1End].value).getTime(),
-      refBand2Start: new Date(firstRow[refBand2Start].value).getTime(),
-      refBand2End: new Date(firstRow[refBand2End].value).getTime(),
-    };
 
     // Clear previous SVG
     d3.select(element).selectAll("*").remove();
@@ -256,9 +244,6 @@ export const vis: GanttViz = {
       .range([0, height])
       .padding(0.1);
 
-    // Define custom time format for military time without leading zeros
-    const customTimeFormat = d3.timeFormat("%-H:%M");
-
     // Add axes
     svg.append("g")
       .attr("class", "x axis")
@@ -274,25 +259,7 @@ export const vis: GanttViz = {
       .selectAll('text')
       .style("font-family", "'Source Sans Pro', sans-serif");
 
-    // Draw range bands
-    svg.append("rect")
-      .attr("class", "range-band")
-      .attr("x", x(new Date(refBands.refBand1Start)))
-      .attr("y", 0)
-      .attr("width", x(new Date(refBands.refBand1End)) - x(new Date(refBands.refBand1Start)))
-      .attr("height", height)
-      .attr("fill", (d: any) => {
-        return config.refBand1Color || "rgba(68, 170, 213, 0.1)";
-      });
-
-    svg.append("rect")
-      .attr("class", "range-band")
-      .attr("x", x(new Date(refBands.refBand2Start)))
-      .attr("y", 0)
-      .attr("width", x(new Date(refBands.refBand2End)) - x(new Date(refBands.refBand2Start)))
-      .attr("height", height)
-      .attr("fill", config.refBand2Color || "rgba(68, 170, 213, 0.1)");
-
+  
     // Add background rectangles for alternating rows
     categories.forEach((category, index) => {
       if (index % 2 === 1) {
@@ -411,36 +378,10 @@ export const vis: GanttViz = {
       .style("font-family", "'Source Sans Pro', sans-serif") // Add font-family
       .style("font-size", legendFontSize); // Add font-size
 
-    // Add range colors to legend
-    const rangeColors = [
-      { label: config.refBand1Name, color: config.refBand1Color || "rgba(68, 170, 213, 0.1)" },
-      { label: config.refBand2Name, color: config.refBand2Color || "rgba(68, 170, 213, 0.1)" }
-    ];
+   
 
     const legendItems: LegendItem[] = []
-    rangeColors.forEach((range, i) => {
-      const legendItem = legend.append("g")
-
-      legendItem.append("rect")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", 20)
-        .attr("height", 20)
-        .attr("fill", range.color)
-        .attr("radius", 3);
-
-      const text = legendItem.append("text")
-        .attr("x", 30)
-        .attr("y", 15)
-        .text(range.label)      
-        .style("font-size", legendFontSize);
-
-      const textWidth = text?.node()?.getBBox()?.width ?? 120;
-
-      legendItems.push({ element: legendItem, width: textWidth + 50 }); // Store element and its width
-
-    });
-
+   
     // Add colorCategoryValues to legend
     colorCategoryValues.forEach((value, i) => {
       const legendItem = legend.append("g")
